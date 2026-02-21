@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Apex Books</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { overflow-x: hidden; background: #f4f7f6; }
+        #sidebar { min-width: 250px; max-width: 250px; min-height: 100vh; background: #212529; color: #fff; transition: all 0.3s; }
+        #sidebar .nav-link { color: #adb5bd; padding: 15px 20px; border-bottom: 1px solid #343a40; }
+        #sidebar .nav-link:hover, #sidebar .nav-link.active { background: #343a40; color: #fff; }
+        .stat-card { border: none; border-radius: 10px; transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .main-content { width: 100%; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="p-4">
+            <h3 class="fw-bold text-primary">ApexAdmin</h3>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a href="#" class="nav-link active"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-book me-2"></i> Manage Books</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-tags me-2"></i> Categories</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-people me-2"></i> Users</a></li>
+            <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-envelope me-2"></i> Email Logs</a></li>
+            <li class="nav-item"><a href="#" class="nav-link text-danger"><i class="bi bi-box-arrow-left me-2"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 rounded">
+            <div class="container-fluid">
+                <button class="btn btn-outline-dark btn-sm" id="sidebarCollapse">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="ms-auto d-flex align-items-center">
+                    <span class="me-3">Welcome, <strong>Admin</strong></span>
+                    <img src="https://ui-avatars.com/api/?name=Admin" class="rounded-circle" width="35">
+                </div>
+            </div>
+        </nav>
+
+        <!-- Stats Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card bg-primary text-white p-3 shadow">
+                    <h5>Total Books</h5>
+                    <h2 class="fw-bold">1,250</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card bg-success text-white p-3 shadow">
+                    <h5>Active Users</h5>
+                    <h2 class="fw-bold">450</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card bg-warning text-dark p-3 shadow">
+                    <h5>Orders Today</h5>
+                    <h2 class="fw-bold">25</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card bg-danger text-white p-3 shadow">
+                    <h5>Pending Emails</h5>
+                    <h2 class="fw-bold">5</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Table -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Recent Book Inventory</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Book Title</th>
+                            <th>Author</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><img src="https://via.placeholder.com/40" class="rounded"></td>
+                            <td>Asp.Net Core Basics</td>
+                            <td>John Doe</td>
+                            <td>45</td>
+                            <td><span class="badge bg-success">In Stock</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-info text-white"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
