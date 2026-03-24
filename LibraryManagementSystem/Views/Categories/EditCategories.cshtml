@@ -1,0 +1,116 @@
+﻿@model LibraryManagementSystem.Entity.Category
+
+@{
+    ViewData["Title"] = "Edit Categories";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .card-header {
+        background: #2c3e50;
+        color: white;
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .btn-save {
+        background: #27ae60;
+        color: white;
+        transition: 0.3s;
+    }
+
+        .btn-save:hover {
+            background: #219150;
+            color: white;
+        }
+
+    .error-msg {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        display: none;
+    }
+    /* Validation Message */
+</style>
+
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+
+            <!-- Create Category Card -->
+            <div class="card shadow">
+                <div class="card-header p-3">
+                    <h5 class="mb-0"><i class="bi bi-tags-fill me-2"></i> Create New Category</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form id="categoryForm" asp-action="EditCategories">
+                        <!-- CategoryId -->
+                        <input asp-for="CategoryId" hidden/>
+
+                        <!-- Category Name -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold"></label>
+
+                            <input type="text" asp-for="Name" class="form-control" id="categoryName" placeholder="e.g. Science Fiction, Programming" required>
+                            <span class="error-msg" id="nameError">Category name is required!</span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold"></label>
+                            <textarea class="form-control" asp-for="Description" id="description" rows="3" placeholder="Short detail about this category..."></textarea>
+                        </div>
+
+                        <!-- Display Status (Checkbox) -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" asp-for="IsActive" type="checkbox" id="isActive" checked>
+                                <label class="form-check-input-label" asp-for="IsActive"></label>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-save px-4 shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i> Update Category
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recently Added (Small Preview) -->
+            <div class="mt-4 p-3 bg-white border rounded shadow-sm">
+                <h6 class="text-muted"><i class="bi bi-clock-history me-2"></i> Recently Added</h6>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Programming <span class="badge bg-success rounded-pill">Active</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        History <span class="badge bg-success rounded-pill">Active</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

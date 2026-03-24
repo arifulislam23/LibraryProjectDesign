@@ -1,0 +1,195 @@
+﻿@model IEnumerable<LibraryManagementSystem.Entity.Book>
+
+@{
+    ViewData["Title"] = "Book List";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int sl = 1;
+}
+
+<style>
+
+    .table thead th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        border-top: none;
+        background-color: #f8f9fa;
+        color: #495057;
+    }
+
+    .book-cover {
+        width: 50px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 6px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        transition: transform 0.2s;
+    }
+
+        .book-cover:hover {
+            transform: scale(1.1);
+        }
+
+    .no-cover-placeholder {
+        width: 50px;
+        height: 70px;
+        background-color: #e9ecef;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-size: 0.65rem;
+        color: #6c757d;
+        border: 1px dashed #ced4da;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+        transition: 0.3s;
+    }
+
+    .price-badge {
+        background-color: #e8fadf;
+        color: #28a745;
+        font-weight: 700;
+        padding: 0.4em 0.8em;
+        border-radius: 50px;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+
+        <!-- Card Header -->
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-book-open me-2"></i> Available Books
+            </h5>
+            <a asp-action="CreateBook" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                <i class="fas fa-plus-circle me-1"></i> Add New Book
+            </a>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="booksTable">
+                    <thead>
+                        <tr>
+                            <th class="text-center" width="5%">#</th>
+                            <th width="10%">Cover</th>
+                            <th width="30%">Book Info</th>
+                            <th width="20%">Author</th>
+                            <th width="15%">Price</th>
+                            <th class="text-center" width="20%">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr id="row-@item.BookId">
+                                <td class="text-center fw-bold text-muted">@sl</td>
+
+                                <!-- Cover Image Column -->
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.CoverUrl))
+                                    {
+                                      
+                                        <img src="@item.CoverUrl" alt="@item.Title" class="book-cover" />
+                                    }
+                                    else
+                                    {
+                                        <div class="no-cover-placeholder">
+                                            <i class="fas fa-image mb-1"></i>
+                                            <span>No Img</span>
+                                        </div>
+                                    }
+                                </td>
+
+                                <!-- Book Info Column -->
+                                <td>
+                                    <span class="fw-bold text-dark d-block" style="font-size: 1.05rem;">@item.Title</span>
+                                    <small class="text-muted">
+                                        <i class="fas fa-tags me-1 text-info"></i>
+                                        @item.CategoryId
+                                    </small>
+                                </td>
+
+                                <!-- Author Column -->
+                                <td>
+                                    <span class="text-secondary fw-semibold">
+                                        <i class="fas fa-user-pen me-1 text-muted"></i> @item.Author
+                                    </span>
+                                </td>
+
+                                <!-- Price Column -->
+                                <td>
+                                    <span class="price-badge">
+                                        $@item.price.ToString("0.00")
+                                    </span>
+                                </td>
+
+                                <!-- Action Buttons -->
+                                <td class="text-center">
+                                    <div class="btn-group shadow-sm" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.BookId" class="btn btn-outline-info btn-sm" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.BookId" class="btn btn-outline-warning btn-sm" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" title="Delete" onclick="confirmDeleteBook(@item.BookId)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            sl++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // DataTables Initialization
+            $('#booksTable').DataTable({
+                "paging": true,
+                "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+                "pageLength": 10,
+                "info": true,
+                "searching": true,
+                "ordering": true,
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search books by title/author..."
+                },
+                "columnDefs": [
+                    { "orderable": false, "targets": [1, 5] }
+                ]
+            });
+        });
+
+        function confirmDeleteBook(id) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to delete this book?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#858796",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/Books/DeleteConfirmed?id=' + id;
+                }
+            });
+        }
+    </script>
+}

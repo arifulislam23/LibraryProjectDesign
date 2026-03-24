@@ -1,0 +1,137 @@
+﻿@model LibraryManagementSystem.Entity.Category
+
+@{
+    ViewData["Title"] = "Category Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .card-header {
+        background: #2c3e50;
+        color: white;
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .label-title {
+        color: #7f8c8d;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 2px;
+    }
+
+    .value-text {
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .btn-edit {
+        background: #3498db;
+        color: white;
+        transition: 0.3s;
+    }
+
+        .btn-edit:hover {
+            background: #2980b9;
+            color: white;
+        }
+
+    .status-badge {
+        padding: 0.5em 1em;
+        border-radius: 50px;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+
+            <!-- Category Details Card -->
+            <div class="card shadow">
+                <div class="card-header p-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-info-circle-fill me-2"></i> Category Details</h5>
+                    <span class="badge bg-light text-dark">ID: #@Model.CategoryId</span>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Name -->
+                    <div class="mb-4">
+                        <p class="label-title">@Html.DisplayNameFor(model => model.Name)</p>
+                        <p class="value-text">@Model.Name</p>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <p class="label-title">@Html.DisplayNameFor(model => model.Description)</p>
+                        <p class="text-muted">
+                            @(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)
+                        </p>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-4">
+                        <p class="label-title">Status</p>
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success status-badge">
+                                <i class="bi bi-check-circle-fill me-1"></i> Active
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary status-badge">
+                                <i class="bi bi-x-circle-fill me-1"></i> Inactive
+                            </span>
+                        }
+                    </div>
+
+                    <hr />
+
+                    <!-- Timestamps -->
+                    <div class="row text-center mt-3">
+                        <div class="col-6 border-end">
+                            <p class="label-title">Created At</p>
+                            <small class="text-muted">@Model.CreateAt.ToString("MMM dd, yyyy HH:mm")</small>
+                        </div>
+                        <div class="col-6">
+                            <p class="label-title">Last Updated</p>
+                            <small class="text-muted">
+                                @(Model.UpdateAt.HasValue? Model.UpdateAt.Value.ToString("MMM dd, yyyy HH:mm") : "Never")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="card-footer bg-light p-3 d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.CategoryId" class="btn btn-edit px-4 shadow-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Category
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-arrow-left-circle me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contextual Note (Similar to the "Recently Added" section in Create) -->
+            <div class="mt-4 p-3 bg-white border rounded shadow-sm">
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    This category is currently linked to <strong>(0)</strong> books in the library system.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>

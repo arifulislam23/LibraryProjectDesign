@@ -1,0 +1,10 @@
+﻿namespace LibraryManagementSystem.Service
+{
+    public class SumService : ISumService
+    {
+        public int Sum(int a, int b)
+        {
+            return a + b;
+        }
+    }
+}

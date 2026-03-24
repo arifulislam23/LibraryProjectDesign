@@ -1,0 +1,1571 @@
+==== Project root: C:\Users\Akash\Desktop\LibraryManagementSystem\LibraryManagementSystem ====
+
+--------------Path:\Program.cs----------------
+using LibraryManagementSystem.Data;
+using Microsoft.EntityFrameworkCore;
+var builder = WebApplication.CreateBuilder(args);
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+ options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
+var app = builder.Build();
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+ app.UseExceptionHandler("/Home/Error");
+ // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+ app.UseHsts();
+}
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+app.MapControllerRoute(
+ name: "default",
+ pattern: "{controller=Home}/{action=Index}/{id?}");
+app.Run();
+
+
+--------------Path:\Controllers\BooksController.cs----------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LibraryManagementSystem.Data;
+using LibraryManagementSystem.Entity;
+namespace LibraryManagementSystem.Controllers
+{
+ public class BooksController : Controller
+ {
+ private readonly ApplicationDbContext _context;
+ public BooksController(ApplicationDbContext context)
+ {
+ _context = context;
+ }
+ // GET: Books
+ public async Task<IActionResult> Index()
+ {
+ return View(await _context.Books.ToListAsync());
+ }
+ // GET: Books/Details/5
+ public async Task<IActionResult> Details(int? id)
+ {
+ if (id == null)
+ {
+ return NotFound();
+ }
+ var book = await _context.Books
+ .FirstOrDefaultAsync(m => m.BookId == id);
+ if (book == null)
+ {
+ return NotFound();
+ }
+ return View(book);
+ }
+ // GET: Books/Create
+ public IActionResult Create()
+ {
+ return View();
+ }
+ // POST: Books/Create
+ // To protect from overposting attacks, enable the specific properties you want to bind to.
+ // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+ [HttpPost]
+ [ValidateAntiForgeryToken]
+ public async Task<IActionResult> Create([Bind("BookId,Title,Author,price,CoverUrl")] Book book)
+ {
+ if (ModelState.IsValid)
+ {
+ _context.Add(book);
+ await _context.SaveChangesAsync();
+ return RedirectToAction(nameof(Index));
+ }
+ return View(book);
+ }
+ // GET: Books/Edit/5
+ public async Task<IActionResult> Edit(int? id)
+ {
+ if (id == null)
+ {
+ return NotFound();
+ }
+ var book = await _context.Books.FindAsync(id);
+ if (book == null)
+ {
+ return NotFound();
+ }
+ return View(book);
+ }
+ // POST: Books/Edit/5
+ // To protect from overposting attacks, enable the specific properties you want to bind to.
+ // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+ [HttpPost]
+ [ValidateAntiForgeryToken]
+ public async Task<IActionResult> Edit(int id, [Bind("BookId,Title,Author,price,CoverUrl")] Book book)
+ {
+ if (id != book.BookId)
+ {
+ return NotFound();
+ }
+ if (ModelState.IsValid)
+ {
+ try
+ {
+ _context.Update(book);
+ await _context.SaveChangesAsync();
+ }
+ catch (DbUpdateConcurrencyException)
+ {
+ if (!BookExists(book.BookId))
+ {
+ return NotFound();
+ }
+ else
+ {
+ throw;
+ }
+ }
+ return RedirectToAction(nameof(Index));
+ }
+ return View(book);
+ }
+ // GET: Books/Delete/5
+ public async Task<IActionResult> Delete(int? id)
+ {
+ if (id == null)
+ {
+ return NotFound();
+ }
+ var book = await _context.Books
+ .FirstOrDefaultAsync(m => m.BookId == id);
+ if (book == null)
+ {
+ return NotFound();
+ }
+ return View(book);
+ }
+ // POST: Books/Delete/5
+ [HttpPost, ActionName("Delete")]
+ [ValidateAntiForgeryToken]
+ public async Task<IActionResult> DeleteConfirmed(int id)
+ {
+ var book = await _context.Books.FindAsync(id);
+ if (book != null)
+ {
+ _context.Books.Remove(book);
+ }
+ await _context.SaveChangesAsync();
+ return RedirectToAction(nameof(Index));
+ }
+ private bool BookExists(int id)
+ {
+ return _context.Books.Any(e => e.BookId == id);
+ }
+ }
+}
+
+
+--------------Path:\Controllers\CategoriesController.cs----------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LibraryManagementSystem.Data;
+using LibraryManagementSystem.Entity;
+namespace LibraryManagementSystem.Controllers
+{
+ public class CategoriesController : Controller
+ {
+ private readonly ApplicationDbContext _context;
+ public CategoriesController(ApplicationDbContext context)
+ {
+ _context = context;
+ }
+ // GET: Categories
+ public async Task<IActionResult> Index()
+ {
+ return View(await _context.Categories.ToListAsync());
+ }
+ public IActionResult List()
+ {
+ var dataList = _context.Categories.ToList();
+ return View(dataList);
+ }
+ public IActionResult DetailsView(int id)
+ {
+ var data = _context.Categories.Where(x => x.CategoryId == id)
+ .FirstOrDefault();
+ if (data == null)
+ return NotFound();
+ return View(data);
+ }
+ // GET: Categories/Details/5
+ public async Task<IActionResult> Details(int? id)
+ {
+ if (id == null)
+ {
+ return NotFound();
+ }
+ var category = _context.Categories.Where(x => x.CategoryId == id).FirstOrDefault();
+ if (category == null)
+ {
+ return NotFound();
+ }
+ return View(category);
+ }
+ public IActionResult Create()
+ {
+ return View();
+ }
+ // POST: Categories/Create
+ // To protect from overposting attacks, enable the specific properties you want to bind to.
+ // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+ [HttpPost]
+ [ValidateAntiForgeryToken]
+ public async Task<IActionResult> Create([Bind("CategoryId,Name,Description,IsActive,CreateAt,UpdateAt")] Category category)
+ {
+ if (ModelState.IsValid)
+ {
+ _context.Add(category);
+ await _context.SaveChangesAsync();
+ return RedirectToAction(nameof(Index));
+ }
+ return View(category);
+ }
+ // GET: Categories/Edit/5
+ //public async Task<IActionResult> Edit(int? id)
+ //{
+ // if (id == null)
+ // {
+ // return NotFound();
+ // }
+ // var category = await _context.Categories.FindAsync(id);
+ // if (category == null)
+ // {
+ // return NotFound();
+ // }
+ // return View(category);
+ //}
+ [HttpGet]
+ public IActionResult EditCategories(int id)
+ {
+ if(id <=0 )
+ {
+ return NotFound();
+ }
+ var dataset = _context.Categories
+ .Where(x => x.CategoryId == id).FirstOrDefault();
+ //select * from Categories where CategoryId = id
+ if (dataset == null)
+ return NotFound();
+ return View(dataset);
+ }
+ [HttpPost]
+ public IActionResult EditCategories(Category userinput)
+ {
+ if (userinput == null)
+ return View(userinput);
+ if (userinput.CategoryId <= 0)
+ return NotFound();
+ var oldData = _context.Categories
+ .Where(x => x.CategoryId == userinput.CategoryId).FirstOrDefault();
+ if(oldData == null)
+ return NotFound();
+ oldData.Name = userinput.Name;
+ oldData.Description = userinput.Description;
+ oldData.IsActive = userinput.IsActive;
+ oldData.UpdateAt = DateTime.Now;
+ _context.Update(oldData);
+ _context.SaveChanges();
+ return RedirectToAction(nameof(List));
+ }
+ // POST: Categories/Edit/5
+ // To protect from overposting attacks, enable the specific properties you want to bind to.
+ // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+ [HttpPost]
+ [ValidateAntiForgeryToken]
+ public async Task<IActionResult> Edit(int id, [Bind("CategoryId,Name,Description,IsActive,CreateAt,UpdateAt")] Category category)
+ {
+ if (id != category.CategoryId)
+ {
+ return NotFound();
+ }
+ if (ModelState.IsValid)
+ {
+ try
+ {
+ _context.Update(category);
+ await _context.SaveChangesAsync();
+ }
+ catch (DbUpdateConcurrencyException)
+ {
+ if (!CategoryExists(category.CategoryId))
+ {
+ return NotFound();
+ }
+ else
+ {
+ throw;
+ }
+ }
+ return RedirectToAction(nameof(Index));
+ }
+ return View(category);
+ }
+ // GET: Categories/Delete/5
+ public async Task<IActionResult> Delete(int? id)
+ {
+ if (id == null)
+ {
+ return NotFound();
+ }
+ var category = await _context.Categories
+ .FirstOrDefaultAsync(m => m.CategoryId == id);
+ if (category == null)
+ {
+ return NotFound();
+ }
+ return View(category);
+ }
+ // POST: Categories/Delete/5
+ [HttpGet, ActionName("DeleteConfirmed")]
+ public async Task<IActionResult> DeleteConfirmed(int id)
+ {
+ var category = await _context.Categories.FindAsync(id);
+ if (category != null)
+ {
+ _context.Categories.Remove(category);
+ }
+ await _context.SaveChangesAsync();
+ return RedirectToAction(nameof(List));
+ }
+ private bool CategoryExists(int id)
+ {
+ return _context.Categories.Any(e => e.CategoryId == id);
+ }
+ }
+}
+
+
+--------------Path:\Controllers\HomeController.cs----------------
+using System.Diagnostics;
+using LibraryManagementSystem.Models;
+using Microsoft.AspNetCore.Mvc;
+namespace LibraryManagementSystem.Controllers
+{
+ public class HomeController : Controller
+ {
+ private readonly ILogger<HomeController> _logger;
+ public HomeController(ILogger<HomeController> logger)
+ {
+ _logger = logger;
+ }
+ public IActionResult Index()
+ {
+ return View();
+ }
+ public IActionResult Privacy()
+ {
+ return View();
+ }
+ [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+ public IActionResult Error()
+ {
+ return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+ }
+ }
+}
+
+
+--------------Path:\Data\ApplicationDbContext.cs----------------
+
+using LibraryManagementSystem.Entity;
+using Microsoft.EntityFrameworkCore;
+namespace LibraryManagementSystem.Data
+{
+ public class ApplicationDbContext : DbContext
+ {
+ public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
+ : base(options)
+ {
+ }
+ public DbSet<Category> Categories { get; set; }
+ public DbSet<Book> Books { get; set; }
+ 
+ }
+}
+
+
+--------------Path:\Entity\Book.cs----------------
+using System.ComponentModel.DataAnnotations;
+namespace LibraryManagementSystem.Entity
+{
+ public class Book
+ {
+ [Key]
+ public int BookId { get; set; }
+ [Required]
+ public string Title { get; set; }
+ public string? Author { get; set; }
+ [Range (0,100000)]
+ public decimal price { get; set; }
+ public string? CoverUrl { get; set; }
+ }
+}
+
+
+--------------Path:\Entity\Category.cs----------------
+using System.ComponentModel.DataAnnotations;
+namespace LibraryManagementSystem.Entity
+{
+ public class Category
+ {
+ //CRUD : Create, Read, Update, Delete
+ [Key]
+ public int CategoryId { get; set; }
+ [Display(Name = "Name of Category")]
+ public string Name { get; set; } = String.Empty;
+ [Display(Name = "Category Description")]
+ public string? Description { get; set; }
+ [Display(Name = "Category Is Active?")]
+ public bool IsActive { get; set; } = false;
+ public DateTime CreateAt { get; set; } = DateTime.UtcNow;
+ public DateTime? UpdateAt { get; set; }
+ }
+}
+
+
+--------------Path:\Models\ErrorViewModel.cs----------------
+namespace LibraryManagementSystem.Models
+{
+ public class ErrorViewModel
+ {
+ public string? RequestId { get; set; }
+ public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+ }
+}
+
+
+--------------Path:\Views\_ViewStart.cshtml----------------
+@{
+ Layout = "_Layout";
+}
+
+
+--------------Path:\Views\Books\Create.cshtml----------------
+@model LibraryManagementSystem.Entity.Book
+@{
+ ViewData["Title"] = "Create";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Create</h1>
+<h4>Book</h4>
+<hr />
+<div class="row">
+ <div class="col-md-4">
+ <form asp-action="Create">
+ <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ <div class="form-group">
+ <label asp-for="Title" class="control-label"></label>
+ <input asp-for="Title" class="form-control" />
+ <span asp-validation-for="Title" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author" class="control-label"></label>
+ <input asp-for="Author" class="form-control" />
+ <span asp-validation-for="Author" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="price" class="control-label"></label>
+ <input asp-for="price" class="form-control" />
+ <span asp-validation-for="price" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="CoverUrl" class="control-label"></label>
+ <input asp-for="CoverUrl" class="form-control" />
+ <span asp-validation-for="CoverUrl" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <input type="submit" value="Create" class="btn btn-primary" />
+ </div>
+ </form>
+ </div>
+</div>
+<div>
+ <a asp-action="Index">Back to List</a>
+</div>
+@section Scripts {
+ @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+--------------Path:\Views\Books\Delete.cshtml----------------
+@model LibraryManagementSystem.Entity.Book
+@{
+ ViewData["Title"] = "Delete";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Delete</h1>
+<h3>Are you sure you want to delete this?</h3>
+<div>
+ <h4>Book</h4>
+ <hr />
+ <dl class="row">
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Title)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Title)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Author)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Author)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.price)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.price)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.CoverUrl)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.CoverUrl)
+ </dd>
+ </dl>
+ <form asp-action="Delete">
+ <input type="hidden" asp-for="BookId" />
+ <input type="submit" value="Delete" class="btn btn-danger" /> |
+ <a asp-action="Index">Back to List</a>
+ </form>
+</div>
+
+
+--------------Path:\Views\Books\Details.cshtml----------------
+@model LibraryManagementSystem.Entity.Book
+@{
+ ViewData["Title"] = "Details";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Details</h1>
+<div>
+ <h4>Book</h4>
+ <hr />
+ <dl class="row">
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Title)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Title)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Author)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Author)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.price)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.price)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.CoverUrl)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.CoverUrl)
+ </dd>
+ </dl>
+</div>
+<div>
+ <a asp-action="Edit" asp-route-id="@Model?.BookId">Edit</a> |
+ <a asp-action="Index">Back to List</a>
+</div>
+
+
+--------------Path:\Views\Books\Edit.cshtml----------------
+@model LibraryManagementSystem.Entity.Book
+@{
+ ViewData["Title"] = "Edit";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Edit</h1>
+<h4>Book</h4>
+<hr />
+<div class="row">
+ <div class="col-md-4">
+ <form asp-action="Edit">
+ <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ <input type="hidden" asp-for="BookId" />
+ <div class="form-group">
+ <label asp-for="Title" class="control-label"></label>
+ <input asp-for="Title" class="form-control" />
+ <span asp-validation-for="Title" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Author" class="control-label"></label>
+ <input asp-for="Author" class="form-control" />
+ <span asp-validation-for="Author" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="price" class="control-label"></label>
+ <input asp-for="price" class="form-control" />
+ <span asp-validation-for="price" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="CoverUrl" class="control-label"></label>
+ <input asp-for="CoverUrl" class="form-control" />
+ <span asp-validation-for="CoverUrl" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <input type="submit" value="Save" class="btn btn-primary" />
+ </div>
+ </form>
+ </div>
+</div>
+<div>
+ <a asp-action="Index">Back to List</a>
+</div>
+@section Scripts {
+ @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+--------------Path:\Views\Books\Index.cshtml----------------
+@model IEnumerable<LibraryManagementSystem.Entity.Book>
+@{
+ ViewData["Title"] = "Index";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Index</h1>
+<p>
+ <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+ <thead>
+ <tr>
+ <th>
+ @Html.DisplayNameFor(model => model.Title)
+ </th>
+ <th>
+ @Html.DisplayNameFor(model => model.Author)
+ </th>
+ <th>
+ @Html.DisplayNameFor(model => model.price)
+ </th>
+ <th>
+ @Html.DisplayNameFor(model => model.CoverUrl)
+ </th>
+ <th></th>
+ </tr>
+ </thead>
+ <tbody>
+@foreach (var item in Model) {
+ <tr>
+ <td>
+ @Html.DisplayFor(modelItem => item.Title)
+ </td>
+ <td>
+ @Html.DisplayFor(modelItem => item.Author)
+ </td>
+ <td>
+ @Html.DisplayFor(modelItem => item.price)
+ </td>
+ <td>
+ @Html.DisplayFor(modelItem => item.CoverUrl)
+ </td>
+ <td>
+ <a asp-action="Edit" asp-route-id="@item.BookId">Edit</a> |
+ <a asp-action="Details" asp-route-id="@item.BookId">Details</a> |
+ <a asp-action="Delete" asp-route-id="@item.BookId">Delete</a>
+ </td>
+ </tr>
+}
+ </tbody>
+</table>
+
+
+--------------Path:\Views\Categories\Create.cshtml----------------
+@model LibraryManagementSystem.Entity.Category
+@{
+ ViewData["Title"] = "Create";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<style>
+ body {
+ background-color: #f4f7f6;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
+ .card {
+ border: none;
+ border-radius: 12px;
+ }
+ .card-header {
+ background: #2c3e50;
+ color: white;
+ border-radius: 12px 12px 0 0 !important;
+ }
+ .btn-save {
+ background: #27ae60;
+ color: white;
+ transition: 0.3s;
+ }
+ .btn-save:hover {
+ background: #219150;
+ color: white;
+ }
+ .error-msg {
+ color: #e74c3c;
+ font-size: 0.85rem;
+ display: none;
+ }
+ /* Validation Message */
+</style>
+<div class="container mt-5">
+ <div class="row justify-content-center">
+ <div class="col-md-6">
+ 
+ <!-- Create Category Card -->
+ <div class="card shadow">
+ <div class="card-header p-3">
+ <h5 class="mb-0"><i class="bi bi-tags-fill me-2"></i> Create New Category</h5>
+ </div>
+ <div class="card-body p-4">
+ <form id="categoryForm" asp-action="Create">
+ <!-- Category Name -->
+ <div class="mb-3">
+ <label asp-for="Name" class="form-label fw-bold"></label>
+ <input type="text" asp-for="Name" class="form-control" id="categoryName" placeholder="e.g. Science Fiction, Programming" required>
+ <span class="error-msg" id="nameError">Category name is required!</span>
+ </div>
+ <!-- Description -->
+ <div class="mb-3">
+ <label asp-for="Description" class="form-label fw-bold"></label>
+ <textarea class="form-control" asp-for="Description" id="description" rows="3" placeholder="Short detail about this category..."></textarea>
+ </div>
+ <!-- Display Status (Checkbox) -->
+ <div class="mb-4">
+ <div class="form-check form-switch">
+ <input class="form-check-input" asp-for="IsActive" type="checkbox" id="isActive" checked>
+ <label class="form-check-input-label" asp-for="IsActive"></label>
+ </div>
+ </div>
+ <!-- Buttons -->
+ <div class="d-flex gap-2">
+ <button type="submit" class="btn btn-save px-4 shadow-sm">
+ <i class="bi bi-check-circle me-1"></i> Save Category
+ </button>
+ <button type="reset" class="btn btn-outline-secondary px-4">
+ <i class="bi bi-x-circle me-1"></i> Cancel
+ </button>
+ </div>
+ </form>
+ </div>
+ </div>
+ <!-- Recently Added (Small Preview) -->
+ <div class="mt-4 p-3 bg-white border rounded shadow-sm">
+ <h6 class="text-muted"><i class="bi bi-clock-history me-2"></i> Recently Added</h6>
+ <ul class="list-group list-group-flush small">
+ <li class="list-group-item d-flex justify-content-between align-items-center">
+ Programming <span class="badge bg-success rounded-pill">Active</span>
+ </li>
+ <li class="list-group-item d-flex justify-content-between align-items-center">
+ History <span class="badge bg-success rounded-pill">Active</span>
+ </li>
+ </ul>
+ </div>
+ </div>
+ </div>
+</div>
+@section Scripts {
+ @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+--------------Path:\Views\Categories\Delete.cshtml----------------
+@model LibraryManagementSystem.Entity.Category
+@{
+ ViewData["Title"] = "Delete";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Delete</h1>
+<h3>Are you sure you want to delete this?</h3>
+<div>
+ <h4>Category</h4>
+ <hr />
+ <dl class="row">
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Name)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Name)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Description)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Description)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.IsActive)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.IsActive)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.CreateAt)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.CreateAt)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.UpdateAt)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.UpdateAt)
+ </dd>
+ </dl>
+ <form asp-action="Delete">
+ <input type="hidden" asp-for="CategoryId" />
+ <input type="submit" value="Delete" class="btn btn-danger" /> |
+ <a asp-action="Index">Back to List</a>
+ </form>
+</div>
+
+
+--------------Path:\Views\Categories\Details.cshtml----------------
+@model LibraryManagementSystem.Entity.Category
+@{
+ ViewData["Title"] = "Details";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Details</h1>
+<div>
+ <h4>Category</h4>
+ <hr />
+ <dl class="row">
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Name)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Name)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.Description)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.Description)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.IsActive)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.IsActive)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.CreateAt)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.CreateAt)
+ </dd>
+ <dt class = "col-sm-2">
+ @Html.DisplayNameFor(model => model.UpdateAt)
+ </dt>
+ <dd class = "col-sm-10">
+ @Html.DisplayFor(model => model.UpdateAt)
+ </dd>
+ </dl>
+</div>
+<div>
+ <a asp-action="Edit" asp-route-id="@Model?.CategoryId">Edit</a> |
+ <a asp-action="Index">Back to List</a>
+</div>
+
+
+--------------Path:\Views\Categories\DetailsView.cshtml----------------
+@model LibraryManagementSystem.Entity.Category
+@{
+ ViewData["Title"] = "Category Details";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<style>
+ body {
+ background-color: #f4f7f6;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
+ .card {
+ border: none;
+ border-radius: 12px;
+ }
+ .card-header {
+ background: #2c3e50;
+ color: white;
+ border-radius: 12px 12px 0 0 !important;
+ }
+ .label-title {
+ color: #7f8c8d;
+ font-size: 0.85rem;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ margin-bottom: 2px;
+ }
+ .value-text {
+ color: #2c3e50;
+ font-weight: 600;
+ font-size: 1.1rem;
+ }
+ .btn-edit {
+ background: #3498db;
+ color: white;
+ transition: 0.3s;
+ }
+ .btn-edit:hover {
+ background: #2980b9;
+ color: white;
+ }
+ .status-badge {
+ padding: 0.5em 1em;
+ border-radius: 50px;
+ }
+</style>
+<div class="container mt-5">
+ <div class="row justify-content-center">
+ <div class="col-md-7">
+ <!-- Category Details Card -->
+ <div class="card shadow">
+ <div class="card-header p-3 d-flex justify-content-between align-items-center">
+ <h5 class="mb-0"><i class="bi bi-info-circle-fill me-2"></i> Category Details</h5>
+ <span class="badge bg-light text-dark">ID: #@Model.CategoryId</span>
+ </div>
+ <div class="card-body p-4">
+ <!-- Name -->
+ <div class="mb-4">
+ <p class="label-title">@Html.DisplayNameFor(model => model.Name)</p>
+ <p class="value-text">@Model.Name</p>
+ </div>
+ <!-- Description -->
+ <div class="mb-4">
+ <p class="label-title">@Html.DisplayNameFor(model => model.Description)</p>
+ <p class="text-muted">
+ @(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)
+ </p>
+ </div>
+ <!-- Status -->
+ <div class="mb-4">
+ <p class="label-title">Status</p>
+ @if (Model.IsActive)
+ {
+ <span class="badge bg-success status-badge">
+ <i class="bi bi-check-circle-fill me-1"></i> Active
+ </span>
+ }
+ else
+ {
+ <span class="badge bg-secondary status-badge">
+ <i class="bi bi-x-circle-fill me-1"></i> Inactive
+ </span>
+ }
+ </div>
+ <hr />
+ <!-- Timestamps -->
+ <div class="row text-center mt-3">
+ <div class="col-6 border-end">
+ <p class="label-title">Created At</p>
+ <small class="text-muted">@Model.CreateAt.ToString("MMM dd, yyyy HH:mm")</small>
+ </div>
+ <div class="col-6">
+ <p class="label-title">Last Updated</p>
+ <small class="text-muted">
+ @(Model.UpdateAt.HasValue? Model.UpdateAt.Value.ToString("MMM dd, yyyy HH:mm") : "Never")
+ </small>
+ </div>
+ </div>
+ </div>
+ <!-- Footer Buttons -->
+ <div class="card-footer bg-light p-3 d-flex gap-2">
+ <a asp-action="Edit" asp-route-id="@Model.CategoryId" class="btn btn-edit px-4 shadow-sm">
+ <i class="bi bi-pencil-square me-1"></i> Edit Category
+ </a>
+ <a asp-action="Index" class="btn btn-outline-secondary px-4">
+ <i class="bi bi-arrow-left-circle me-1"></i> Back to List
+ </a>
+ </div>
+ </div>
+ <!-- Contextual Note (Similar to the "Recently Added" section in Create) -->
+ <div class="mt-4 p-3 bg-white border rounded shadow-sm">
+ <p class="small text-muted mb-0">
+ <i class="bi bi-lightbulb me-2"></i>
+ This category is currently linked to <strong>(0)</strong> books in the library system.
+ </p>
+ </div>
+ </div>
+ </div>
+</div>
+
+--------------Path:\Views\Categories\Edit.cshtml----------------
+@model LibraryManagementSystem.Entity.Category
+@{
+ ViewData["Title"] = "Edit";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Edit</h1>
+<h4>Category</h4>
+<hr />
+<div class="row">
+ <div class="col-md-4">
+ <form asp-action="Edit">
+ <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+ <input type="hidden" asp-for="CategoryId" />
+ <div class="form-group">
+ <label asp-for="Name" class="control-label"></label>
+ <input asp-for="Name" class="form-control" />
+ <span asp-validation-for="Name" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="Description" class="control-label"></label>
+ <input asp-for="Description" class="form-control" />
+ <span asp-validation-for="Description" class="text-danger"></span>
+ </div>
+ <div class="form-group form-check">
+ <label class="form-check-label">
+ <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+ </label>
+ </div>
+ <div class="form-group">
+ <label asp-for="CreateAt" class="control-label"></label>
+ <input asp-for="CreateAt" class="form-control" />
+ <span asp-validation-for="CreateAt" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <label asp-for="UpdateAt" class="control-label"></label>
+ <input asp-for="UpdateAt" class="form-control" />
+ <span asp-validation-for="UpdateAt" class="text-danger"></span>
+ </div>
+ <div class="form-group">
+ <input type="submit" value="Save" class="btn btn-primary" />
+ </div>
+ </form>
+ </div>
+</div>
+<div>
+ <a asp-action="Index">Back to List</a>
+</div>
+@section Scripts {
+ @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+--------------Path:\Views\Categories\EditCategories.cshtml----------------
+@model LibraryManagementSystem.Entity.Category
+@{
+ ViewData["Title"] = "Edit Categories";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<style>
+ body {
+ background-color: #f4f7f6;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
+ .card {
+ border: none;
+ border-radius: 12px;
+ }
+ .card-header {
+ background: #2c3e50;
+ color: white;
+ border-radius: 12px 12px 0 0 !important;
+ }
+ .btn-save {
+ background: #27ae60;
+ color: white;
+ transition: 0.3s;
+ }
+ .btn-save:hover {
+ background: #219150;
+ color: white;
+ }
+ .error-msg {
+ color: #e74c3c;
+ font-size: 0.85rem;
+ display: none;
+ }
+ /* Validation Message */
+</style>
+<div class="container mt-5">
+ <div class="row justify-content-center">
+ <div class="col-md-6">
+ <!-- Create Category Card -->
+ <div class="card shadow">
+ <div class="card-header p-3">
+ <h5 class="mb-0"><i class="bi bi-tags-fill me-2"></i> Create New Category</h5>
+ </div>
+ <div class="card-body p-4">
+ <form id="categoryForm" asp-action="EditCategories">
+ <!-- CategoryId -->
+ <input asp-for="CategoryId" hidden/>
+ <!-- Category Name -->
+ <div class="mb-3">
+ <label asp-for="Name" class="form-label fw-bold"></label>
+ <input type="text" asp-for="Name" class="form-control" id="categoryName" placeholder="e.g. Science Fiction, Programming" required>
+ <span class="error-msg" id="nameError">Category name is required!</span>
+ </div>
+ <!-- Description -->
+ <div class="mb-3">
+ <label asp-for="Description" class="form-label fw-bold"></label>
+ <textarea class="form-control" asp-for="Description" id="description" rows="3" placeholder="Short detail about this category..."></textarea>
+ </div>
+ <!-- Display Status (Checkbox) -->
+ <div class="mb-4">
+ <div class="form-check form-switch">
+ <input class="form-check-input" asp-for="IsActive" type="checkbox" id="isActive" checked>
+ <label class="form-check-input-label" asp-for="IsActive"></label>
+ </div>
+ </div>
+ <!-- Buttons -->
+ <div class="d-flex gap-2">
+ <button type="submit" class="btn btn-save px-4 shadow-sm">
+ <i class="bi bi-check-circle me-1"></i> Update Category
+ </button>
+ <button type="reset" class="btn btn-outline-secondary px-4">
+ <i class="bi bi-x-circle me-1"></i> Cancel
+ </button>
+ </div>
+ </form>
+ </div>
+ </div>
+ <!-- Recently Added (Small Preview) -->
+ <div class="mt-4 p-3 bg-white border rounded shadow-sm">
+ <h6 class="text-muted"><i class="bi bi-clock-history me-2"></i> Recently Added</h6>
+ <ul class="list-group list-group-flush small">
+ <li class="list-group-item d-flex justify-content-between align-items-center">
+ Programming <span class="badge bg-success rounded-pill">Active</span>
+ </li>
+ <li class="list-group-item d-flex justify-content-between align-items-center">
+ History <span class="badge bg-success rounded-pill">Active</span>
+ </li>
+ </ul>
+ </div>
+ </div>
+ </div>
+</div>
+@section Scripts {
+ @{
+ await Html.RenderPartialAsync("_ValidationScriptsPartial");
+ }
+}
+
+
+--------------Path:\Views\Categories\Index.cshtml----------------
+@model IEnumerable<LibraryManagementSystem.Entity.Category>
+@{
+ ViewData["Title"] = "Index";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<h1>Index</h1>
+<p>
+ <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+ <thead>
+ <tr>
+ <th>
+ @Html.DisplayNameFor(model => model.Name)
+ </th>
+ <th>
+ @Html.DisplayNameFor(model => model.Description)
+ </th>
+ <th>
+ @Html.DisplayNameFor(model => model.IsActive)
+ </th>
+ <th>
+ @Html.DisplayNameFor(model => model.CreateAt)
+ </th>
+ <th>
+ @Html.DisplayNameFor(model => model.UpdateAt)
+ </th>
+ <th></th>
+ </tr>
+ </thead>
+ <tbody>
+@foreach (var item in Model) {
+ <tr>
+ <td>
+ @Html.DisplayFor(modelItem => item.Name)
+ </td>
+ <td>
+ @Html.DisplayFor(modelItem => item.Description)
+ </td>
+ <td>
+ @Html.DisplayFor(modelItem => item.IsActive)
+ </td>
+ <td>
+ @Html.DisplayFor(modelItem => item.CreateAt)
+ </td>
+ <td>
+ @Html.DisplayFor(modelItem => item.UpdateAt)
+ </td>
+ <td>
+ <a asp-action="Edit" asp-route-id="@item.CategoryId">Edit</a> |
+ <a asp-action="Details" asp-route-id="@item.CategoryId">Details</a> |
+ <a asp-action="Delete" asp-route-id="@item.CategoryId">Delete</a>
+ </td>
+ </tr>
+}
+ </tbody>
+</table>
+
+
+--------------Path:\Views\Categories\List.cshtml----------------
+@model IEnumerable<LibraryManagementSystem.Entity.Category>
+@{
+ ViewData["Title"] = "Category List";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+ int sl = 1;
+}
+<style>
+ /* টেবিল হেডার স্টাইল */
+ .table thead th {
+ font-size: 0.85rem;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ font-weight: 600;
+ border-top: none;
+ }
+ /* সফট কালার ব্যাজ (Soft Badges) */
+ .bg-success-soft {
+ background-color: #e8fadf !important;
+ color: #71dd37 !important;
+ padding: 0.5em 0.8em;
+ }
+ .bg-danger-soft {
+ background-color: #ffe5e5 !important;
+ color: #ff3e1d !important;
+ padding: 0.5em 0.8em;
+ }
+ /* হোভার ইফেক্ট */
+ .table-hover tbody tr:hover {
+ background-color: #f8f9fa;
+ transition: 0.3s;
+ }
+ /* কার্ড শ্যাডো */
+ .card {
+ border-radius: 0.5rem;
+ }
+ .shadow-sm {
+ box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+ }
+ /* অ্যাকশন বাটন স্টাইল */
+ .btn-sm {
+ padding: 0.25rem 0.5rem;
+ font-size: 0.875rem;
+ }
+</style>
+<div class="container-fluid py-4">
+ <div class="card shadow-sm border-0">
+ <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+ <h5 class="m-0 font-weight-bold text-primary"><i class="fas fa-list me-2"></i>Category List</h5>
+ <a asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-3">
+ <i class="fas fa-plus me-1"></i> Add New Category
+ </a>
+ </div>
+ <div class="card-body">
+ <div class="table-responsive">
+ <table class="table table-hover align-middle" id="categoryTable">
+ <thead class="table-light">
+ <tr>
+ <th scope="col" class="text-center">#</th>
+ <th scope="col">Category Name</th>
+ <th scope="col">Description</th>
+ <th scope="col" class="text-center">Status</th>
+ <th scope="col" class="text-center">Action</th>
+ </tr>
+ </thead>
+ <tbody>
+ @foreach (var item in Model)
+ {
+ <tr>
+ <td class="text-center fw-bold text-muted">@sl</td>
+ <td>
+ <span class="fw-bold text-dark">@item.Name</span>
+ <br />
+ <small class="text-muted">ID: #@item.CategoryId</small>
+ </td>
+ <td>
+ <span class="text-truncate d-inline-block" style="max-width: 200px;">
+ @item.Description
+ </span>
+ </td>
+ <td class="text-center">
+ @if (item.IsActive)
+ {
+ <span class="badge rounded-pill bg-success-soft text-success">
+ <i class="fas fa-check-circle me-1"></i> Active
+ </span>
+ }
+ else
+ {
+ <span class="badge rounded-pill bg-danger-soft text-danger">
+ <i class="fas fa-times-circle me-1"></i> Inactive
+ </span>
+ }
+ </td>
+ <td class="text-center">
+ <div class="btn-group" role="group">
+ <a asp-controller="Categories" asp-action="Details" asp-route-id="@item.CategoryId"
+ class="btn btn-outline-info btn-sm me-1" title="View Details">
+ <i class="fas fa-eye"></i>
+ </a>
+ <a asp-action="Edit" asp-route-id="@item.CategoryId"
+ class="btn btn-outline-warning btn-sm me-1" title="Edit">
+ Edit
+ </a>
+ <a onclick="confirmDelete(@item.CategoryId)"
+ class="btn btn-outline-danger btn-sm" title="Delete">
+ <i class="fas fa-trash-alt"></i>
+ </a>
+ </div>
+ </td>
+ </tr>
+ sl++;
+ }
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+</div>
+@section Scripts {
+ <script>
+ function confirmDelete(id){
+ Swal.fire({
+ title: "Are you sure?",
+ text: "You won't be able to revert this!",
+ icon: "warning",
+ showCancelButton: true,
+ confirmButtonColor: "#3085d6",
+ cancelButtonColor: "#d33",
+ confirmButtonText: "Yes, delete it!"
+ }).then((result) => {
+ if (result.isConfirmed) {
+ window.location.href = '/Categories/DeleteConfirmed?id='+id;
+ }
+ });
+ }
+ </script>
+ <script>
+ $(document).ready(function(){
+ $('#categoryTable').DataTable({
+ "paging":true,
+ "info": true,
+ "searching": true,
+ "ordering": true,
+ "language":{
+ "search": "",
+ "searchPlaceholder": "Search categories..."
+ },
+ "columnDefs":[
+ { "orderable": false, "target":[4]}
+ ]
+ });
+ });
+ </script>
+}
+
+
+--------------Path:\Views\Home\Index.cshtml----------------
+@{
+ ViewData["Title"] = "Home Page";
+ Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="text-center">
+ <h1 class="display-4">Welcome Ferotech</h1>
+ <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+
+--------------Path:\Views\Home\Privacy.cshtml----------------
+@{
+ ViewData["Title"] = "Privacy Policy";
+}
+<h1>@ViewData["Title"]</h1>
+<h2>Ferotech</h2>
+<p>Use this page to detail your site's privacy policy.</p>
+
+
+--------------Path:\Views\Shared\Error.cshtml----------------
+@model ErrorViewModel
+@{
+ ViewData["Title"] = "Error";
+}
+<h1 class="text-danger">Error.</h1>
+<h2 class="text-danger">An error occurred while processing your request.</h2>
+@if (Model.ShowRequestId)
+{
+ <p>
+ <strong>Request ID:</strong> <code>@Model.RequestId</code>
+ </p>
+}
+<h3>Development Mode</h3>
+<p>
+ Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
+</p>
+<p>
+ <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
+ It can result in displaying sensitive information from exceptions to end users.
+ For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
+ and restarting the app.
+</p>
+
+
+--------------Path:\Views\Shared\_AdminLayout.cshtml----------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Admin Dashboard | Apex Books</title>
+ <!-- 1. Bootstrap 5 CSS -->
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+ <!-- 2. Icons -->
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+ <!-- 3. DataTables Bootstrap 5 CSS -->
+ <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+ <!-- 4. Toastr CSS -->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+ <!-- 5. SweetAlert2 CSS -->
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+ <style>
+ body {
+ overflow-x: hidden;
+ background: #f4f7f6;
+ }
+ #sidebar {
+ min-width: 250px;
+ max-width: 250px;
+ min-height: 100vh;
+ background: #212529;
+ color: #fff;
+ transition: all 0.3s;
+ }
+ #sidebar .nav-link {
+ color: #adb5bd;
+ padding: 15px 20px;
+ border-bottom: 1px solid #343a40;
+ }
+ #sidebar .nav-link:hover, #sidebar .nav-link.active {
+ background: #343a40;
+ color: #fff;
+ }
+ .main-content {
+ width: 100%;
+ padding: 20px;
+ }
+ </style>
+</head>
+<body>
+ <div class="d-flex">
+ <!-- Sidebar -->
+ <nav id="sidebar">
+ <div class="p-4">
+ <h3 class="fw-bold text-primary">ApexAdmin</h3>
+ </div>
+ <ul class="nav flex-column">
+ <li class="nav-item"><a asp-action="Index" asp-controller="Home" class="nav-link active"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+ <li class="nav-item"><a asp-action="Index" asp-controller="Books" class="nav-link"><i class="bi bi-book me-2"></i> Manage Books</a></li>
+ <li class="nav-item"><a asp-action="List" asp-controller="Categories" class="nav-link"><i class="bi bi-tags me-2"></i> Categories</a></li>
+ <li class="nav-item"><a href="#" class="nav-link text-danger"><i class="bi bi-box-arrow-left me-2"></i> Logout</a></li>
+ </ul>
+ </nav>
+ <main role="main" class="main-content">
+ <!-- Top Navbar -->
+ <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 rounded">
+ <div class="container-fluid">
+ <button class="btn btn-outline-dark btn-sm" id="sidebarCollapse">
+ <i class="bi bi-list"></i>
+ </button>
+ <div class="ms-auto d-flex align-items-center">
+ <span class="me-3">Welcome, <strong>Admin</strong></span>
+ <img src="https://ui-avatars.com/api/?name=Admin" class="rounded-circle" width="35">
+ </div>
+ </div>
+ </nav>
+ @RenderBody()
+ </main>
+ </div>
+ <!-- ১. jQuery -->
+ <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+ <!-- ২. Bootstrap Bundle-->
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+ <!-- ৩. DataTables JS -->
+ <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+ <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+ <!-- ৪. SweetAlert2 JS -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ <!-- ৫. Toastr JS -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+ <!-- ৭. RenderSection -->
+ @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+--------------Path:\Views\Shared\_Layout.cshtml----------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="utf-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title>@ViewData["Title"] - LibraryManagementSystem</title>
+ <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+ <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+ <link rel="stylesheet" href="~/LibraryManagementSystem.styles.css" asp-append-version="true" />
+</head>
+<body>
+ <header>
+ <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+ <div class="container-fluid">
+ <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LibraryManagementSystem</a>
+ <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+ aria-expanded="false" aria-label="Toggle navigation">
+ <span class="navbar-toggler-icon"></span>
+ </button>
+ <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+ <ul class="navbar-nav flex-grow-1">
+ <li class="nav-item">
+ <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+ </li>
+ <li class="nav-item">
+ <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+ </li>
+ </ul>
+ </div>
+ </div>
+ </nav>
+ </header>
+ <div class="container">
+ <main role="main" class="pb-3">
+ @RenderBody()
+ </main>
+ </div>
+ <footer class="border-top footer text-muted">
+ <div class="container">
+ &copy; 2026 - LibraryManagementSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+ </div>
+ </footer>
+ <script src="~/lib/jquery/dist/jquery.min.js"></script>
+ <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+ <script src="~/js/site.js" asp-append-version="true"></script>
+ @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

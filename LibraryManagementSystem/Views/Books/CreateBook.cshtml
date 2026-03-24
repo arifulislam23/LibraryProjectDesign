@@ -1,0 +1,66 @@
+﻿@using LibraryManagementSystem.Entity
+@model Book
+
+@{
+    ViewData["Title"] = "Book Create";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Book Information</h4>
+            </div>
+            <div class="card-body">
+                <form id="bookForm" asp-action="CreateBookSubmit" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Book Title</label>
+                        <input type="text" class="form-control" asp-for="Title" placeholder="Enter book title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Author Name</label>
+                        <input type="text" class="form-control" asp-for="Author" placeholder="Enter author name" required>
+                    </div>
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Category</label>
+
+
+                            <select class="form-select" asp-for="CategoryId" asp-items="ViewBag.CategoryList">
+                                <option value="" disabled selected>--Select Category--</option>
+
+                            </select>
+
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Price ($)</label>
+                            <input type="number" asp-for="price" class="form-control" step="0.01">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Price ($)</label>
+                            <input type="number" name="Price2" class="form-control" step="0.01">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Book Cover URL</label>
+                        <input type="file" class="form-control" name="coverPhoto" >
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Book Cover URL</label>
+                        <input type="file" class="form-control" name="ThumnailPhoto" >
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Save Book</button>
+                        <a href="books.html" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
